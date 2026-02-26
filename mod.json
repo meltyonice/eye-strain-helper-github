@@ -11,7 +11,7 @@
 	"version": "v1.0.0",
 	"developer": "MeltyOnIce",
 	"links": {
-		
+		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
 	},
 	"description": "A mod that helps prevent eye strain without interrupting attempts like external software would.",
 	"dependencies": {
