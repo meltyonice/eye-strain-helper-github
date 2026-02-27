@@ -1,7 +1,13 @@
 /**
  * Include the Geode headers.
  */
+#include "Geode/modify/Modify.hpp"
 #include <Geode/Geode.hpp>
+#include <Geode/binding/GJBaseGameLayer.hpp>
+#include <Geode/binding/GJGameLevel.hpp>
+#include <Geode/binding/LabelGameObject.hpp>
+#include <Geode/binding/PlayLayer.hpp>
+#include <Geode/binding/UILayer.hpp>
 
 /**
  * Brings cocos2d and all Geode namespaces to the current scope.
@@ -25,36 +31,22 @@ using namespace geode::prelude;
  * struct MyMenuLayer : Modify<MyMenuLayer, MenuLayer> {};
  */
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/UILayer.hpp>
 
-class $modify(MyMenuLayer, MenuLayer) {
-	/**
-	 * Typically classes in GD are initialized using the `init` function, (though not always!),
-	 * so here we use it to add our own button to the bottom menu.
-	 *
-	 * Note that for all hooks, your signature has to *match exactly*,
-	 * `void init()` would not place a hook!
-	*/
-	bool init() {
-		/**
-		 * We call the original init function so that the
-		 * original class is properly initialized.
-		 */
-		if (!MenuLayer::init()) {
+
+
+class $modify(UILayerMod, UILayer) {
+	
+
+	bool init(GJBaseGameLayer* layer) {
+		if (!UILayer::init(layer)) {
 			return false;
 		}
 
-		/**
-		 * We return `true` to indicate that the class was properly initialized.
-		 */
+		FLAlertLayer::create("Eye Strain Helper", "Hello from my custom mod!", "OK")->show();
+
 		return true;
 	}
 
-	/**
-	 * This is the callback function for the button we created earlier.
-	 * The signature for button callbacks must always be the same,
-	 * return type `void` and taking a `CCObject*`.
-	*/
-	void onMyButton(CCObject*) {
-		FLAlertLayer::create("Geode", "Hello from my custom mod!", "OK")->show();
-	}
 };

@@ -13,6 +13,13 @@
 	"links": {
 		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
 	},
+	"settings": {
+		"enabled": {
+			"type": "bool",
+			"name": "Enable Eye Strain Helper",
+			"default": true
+		}
+	},
 	"description": "A mod that helps prevent eye strain without interrupting attempts like external software would.",
 	"dependencies": {
 		"geode.node-ids": ">=v1.20.0"

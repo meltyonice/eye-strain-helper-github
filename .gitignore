@@ -64,3 +64,4 @@ build-*/
 /cmake-build-*/
 
 buildandrun.sh
+.example
