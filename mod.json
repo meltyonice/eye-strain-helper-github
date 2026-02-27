@@ -18,6 +18,20 @@
 			"type": "bool",
 			"name": "Enable Eye Strain Helper",
 			"default": true
+		},
+		"debugTitle": {
+			"type": "title",
+            "name": "Debugging"
+		},
+		"timingAlertEnabled": {
+			"type": "bool",
+			"name": "enable timing info alert",
+			"default": false
+		},
+		"breakEveryAttempt": {
+			"type": "bool",
+			"name": "strain break on every attempt",
+			"default": false
 		}
 	},
 	"description": "A mod that helps prevent eye strain without interrupting attempts like external software would.",
