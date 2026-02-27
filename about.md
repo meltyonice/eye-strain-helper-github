@@ -9,4 +9,4 @@ This mod is designed to help prevent eye strain without interrupting your runs l
 - Configurable option to start breaks when hitting a checkpoint in platformer mode
 - Interoperability with Safe Eyes (incomplete, see WIP)
 
-##
+## WIP

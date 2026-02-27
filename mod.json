@@ -19,6 +19,16 @@
 			"name": "Enable Eye Strain Helper",
 			"default": true
 		},
+		"breakDuration": {
+			"type": "int",
+			"name": "break duration (seconds)",
+			"default": 30
+		},
+		"betweenBreaks": {
+			"type": "int",
+			"name": "time between breaks (minutes)",
+			"default": 20
+		},
 		"debugTitle": {
 			"type": "title",
             "name": "Debugging"
