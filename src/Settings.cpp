@@ -19,8 +19,16 @@ bool Settings::timingAlertEnabled() {
     return returnme;
 }
 
-int64_t Settings::breakDuration() {
+bool Settings::fiveSecondInterval() {
     static bool returnme = (
+        listenForSettingChanges<bool>("fiveSecondInterval",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("fiveSecondInterval")
+    );
+    return returnme;
+}
+
+int64_t Settings::breakDuration() {
+    static int64_t returnme = (
         listenForSettingChanges<int64_t>("breakDuration",[](int64_t value) { returnme = value; }),
         getMod()->getSettingValue<int64_t>("breakDuration")
     );
@@ -28,7 +36,7 @@ int64_t Settings::breakDuration() {
 }
 
 int64_t Settings::minutesBetweenBreaks() {
-    static bool returnme = (
+    static int64_t returnme = (
         listenForSettingChanges<int64_t>("betweenBreaks",[](int64_t value) { returnme = value; }),
         getMod()->getSettingValue<int64_t>("betweenBreaks")
     );

@@ -6,10 +6,10 @@
 
 class BreakPopup : public geode::Popup {
     protected:
-        bool init(long breakDuration);
+        bool init(long breakDuration, int context);
         
     public:
-        static BreakPopup* create(long breakDuration);
+        static BreakPopup* create(long breakDuration, int context);
         void update();
         void destroy();
 };

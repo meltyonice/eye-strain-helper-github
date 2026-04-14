@@ -12,6 +12,7 @@
 #include <Geode/binding/PlayerObject.hpp>
 #include <Geode/binding/UILayer.hpp>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <ostream>
@@ -76,6 +77,8 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			return false;
 		}
 
+		m_fields->timeLoaded = calcNow2();
+
 		auto winSize = CCDirector::sharedDirector()->getWinSize();
 
 		m_fields->eyeStrainHelperUI = CCNode::create();
@@ -106,7 +109,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			if(Settings::timingAlertEnabled()) {
 				std::stringstream alertContent;
 				long now = calcNow2();
-				alertContent<<"Time since epoch: "<<now<<std::endl<<"Time since PlayLayer load: "<<now-m_fields->timeLoaded<<std::endl<<"Time since last break: "<<now-lastBreak<<std::endl<<"Time since mod loaded: "<<now-modLoad;
+				alertContent<<"Time since epoch: "<<now<<std::endl<<"Time since PlayLayer load: "<<now-m_fields->timeLoaded<<std::endl<<"Time since last break: "<<now-lastBreak<<std::endl<<"Time since mod loaded: "<<now-modLoad<<std::endl<<"Break Duration: "<<Settings::breakDuration();
 				FLAlertLayer::create("Eye Strain Helper", alertContent.str().data(), "OK")->show();
 			}
 		}
@@ -118,7 +121,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			//m_fields->eyeStrainHelperUI
 			if(breakJustStarted) {
 				breakJustStarted = false;
-				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration());
+				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration(), 0);
 			}
 
 			m_fields->breakPopup->update();
@@ -167,7 +170,59 @@ class $modify(ESHPlayerObject, PlayerObject) {
 };
 
 class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
-	virtual void postUpdate(float dt) {
-		LevelEditorLayer::postUpdate(dt);
+	struct Fields {
+		CCNode* eyeStrainHelperUI;
+		long timeLoaded;
+		BreakPopup* breakPopup;
+	};
+
+	bool init(GJGameLevel* level, bool noUI) {
+		if(!LevelEditorLayer::init(level, noUI)) {
+			return false;
+		}
+
+		auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+		m_fields->eyeStrainHelperUI = CCNode::create();
+        m_fields->eyeStrainHelperUI->setTag(10420);
+		m_fields->eyeStrainHelperUI->setID("eye-strain-helper-ui");
+        m_fields->eyeStrainHelperUI->setZOrder(1);
+
+		this->addChild(m_fields->eyeStrainHelperUI);
+
+		return true;
 	}
+
+	void draw() {
+		if(onBreak) {
+			if(Settings::breakDuration() == NULL) {
+				Mod::get()->setSettingValue("breakDuration", 30);
+			}
+
+			//AppDelegate::get()->pauseSound();
+
+			if(calcNow2()-breakStart >= Settings::breakDuration()) {
+				onBreak = false;
+				breakJustEnded = true;
+			}
+
+			if(breakJustStarted) {
+				breakJustStarted = false;
+				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration(), 1);
+			}
+
+			m_fields->breakPopup->update();
+
+			//LevelEditorLayer::pauseAudio();
+
+		} else if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) {
+			startBreak();
+		}
+		if(breakJustEnded) {
+			//LevelEditorLayer::resumeAudio();
+			breakJustEnded = false;
+			m_fields->breakPopup->destroy();
+		}
+		LevelEditorLayer::draw();
+	};
 };

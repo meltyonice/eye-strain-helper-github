@@ -42,6 +42,11 @@
 			"type": "bool",
 			"name": "strain break on every attempt",
 			"default": false
+		},
+		"fiveSecondInterval": {
+			"type": "bool",
+			"name": "five second break interval in editor",
+			"default": false
 		}
 	},
 	"description": "A mod that helps prevent eye strain without interrupting attempts like external software would.",

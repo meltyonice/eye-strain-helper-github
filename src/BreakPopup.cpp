@@ -18,6 +18,7 @@
 #include <Geode/binding/GJGameLevel.hpp>
 #include <Geode/binding/GJListLayer.hpp>
 #include <Geode/binding/PlayLayer.hpp>
+#include <Geode/binding/LevelEditorLayer.hpp>
 #include <Geode/binding/UILayer.hpp>
 #include <Geode/binding/UploadActionPopup.hpp>
 #include <Geode/binding/UploadMessageDelegate.hpp>
@@ -35,9 +36,9 @@ long calcNow() {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-BreakPopup* BreakPopup::create(long breakDuration) {
+BreakPopup* BreakPopup::create(long breakDuration, int context) {
     auto bp = new BreakPopup;
-    if(bp->init(breakDuration)) {
+    if(bp->init(breakDuration, context)) {
         bp->autorelease();
         return bp;
     }
@@ -51,14 +52,14 @@ CCLayer* popupLayer;
 FMOD::ChannelGroup *SoundGroup;
 FMOD::Channel *soundChannel;
 
-bool BreakPopup::init(long breakDuration) {
+bool BreakPopup::init(long breakDuration, int context) {
     if(!Popup::init(360.f, 240.f)) { return false; }
 
     //FLAlertLayer::create("Eye Strain Helper", "Called BreakPopup::init!", "OK")->show();
 
     popupLayer = CCLayer::create();
     popupLayer->setID("EyeStrainHelperPopupLayer");
-    popupLayer->setZOrder(2);
+    popupLayer->setZOrder(24325);
     startTime = calcNow();
 
     //auto breakMenuTop = CCSprite::createWithSpriteFrameName("GJ_table_top02_001.png");
@@ -111,7 +112,18 @@ bool BreakPopup::init(long breakDuration) {
     popupLayer->addChild(bodyText);
     popupLayer->addChild(countdown);
     popupLayer->addChild(background);
-    PlayLayer::get()->addChild(popupLayer);
+    switch (context) {
+        case 0:
+            PlayLayer::get()->addChild(popupLayer);
+            break;
+        case 1:
+            LevelEditorLayer::get()->addChild(popupLayer);
+            break;
+        default:
+            FLAlertLayer::create("Eye Strain Helper", "Error: tried to create break popup in invalid context", "OK")->show();
+            break;
+    }
+    
     return true;
 }
 
