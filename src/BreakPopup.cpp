@@ -26,7 +26,7 @@
 #include <matjson.hpp>
 #include <sstream>
 
-
+#include "Settings.hpp"
 #include "BreakPopup.hpp"
 
 using namespace geode::prelude;
@@ -120,11 +120,10 @@ long lastSecond = calcNow();
 void BreakPopup::update() {
     //log::info("Drew the popup!");
     if(calcNow()-lastSecond >= 1) {
-        auto breakDuration = Mod::get()->getSettingValue<int64_t>("breakDuration");
         lastSecond = calcNow();
         
         std::stringstream s;
-        s<<breakDuration-(calcNow()-startTime)<<"s";
+        s<<Settings::breakDuration()-(calcNow()-startTime)<<"s";
         countdown->setCString(s.str().data());
         //countdown->setColor(ccColor3B (rand(),rand(),rand()));
         //countdown->updateDisplayedColor(ccColor3B (rand(),rand(),rand()));

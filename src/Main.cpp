@@ -24,9 +24,11 @@ using namespace geode::prelude;
 #include <Geode/binding/AppDelegate.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/UILayer.hpp>
+#include <Geode/modify/LevelEditorLayer.hpp>
 
 #include <string>
 #include "BreakPopup.hpp"
+#include "Settings.hpp"
 
 using std::string;
 
@@ -101,8 +103,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 	void pauseGame(bool unfocused) {
 		if(!onBreak) {
 			PlayLayer::pauseGame(unfocused);
-			auto timingAlertEnabled = Mod::get()->getSettingValue<bool>("timingAlertEnabled");
-			if(timingAlertEnabled) {
+			if(Settings::timingAlertEnabled()) {
 				std::stringstream alertContent;
 				long now = calcNow2();
 				alertContent<<"Time since epoch: "<<now<<std::endl<<"Time since PlayLayer load: "<<now-m_fields->timeLoaded<<std::endl<<"Time since last break: "<<now-lastBreak<<std::endl<<"Time since mod loaded: "<<now-modLoad;
@@ -117,8 +118,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			//m_fields->eyeStrainHelperUI
 			if(breakJustStarted) {
 				breakJustStarted = false;
-				auto breakDuration = Mod::get()->getSettingValue<int64_t>("breakDuration");
-				m_fields->breakPopup = BreakPopup::create(breakDuration);
+				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration());
 			}
 
 			m_fields->breakPopup->update();
@@ -138,29 +138,24 @@ class $modify(ESHPlayLayer, PlayLayer) {
 };
 
 
+
 class $modify(ESHPlayerObject, PlayerObject) {
 	void playerDestroyed(bool noeffects) {
 		PlayerObject::playerDestroyed(noeffects);
-		auto breakEveryAttempt = Mod::get()->getSettingValue<bool>("breakEveryAttempt");
-		auto timeBetweenBreaks = Mod::get()->getSettingValue<int64_t>("betweenBreaks");
-		if(calcNow2()-lastBreak >= timeBetweenBreaks*60 || breakEveryAttempt) {
+		if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
 			startBreak();
 		}
 	}
 
 	void update(float deltaTime) {
 		if(onBreak) {
-			auto breakDuration = Mod::get()->getSettingValue<int64_t>("breakDuration");
-			
-			if(breakDuration == NULL) {
+			if(Settings::breakDuration() == NULL) {
 				Mod::get()->setSettingValue("breakDuration", 30);
-				breakDuration = 30;
 			}
 
 			//AppDelegate::get()->pauseSound();
 
-			if(calcNow2()-breakStart >= breakDuration) {
-				//FLAlertLayer::create("Eye Strain Helper", "Should unpause now!", "OK")->show();
+			if(calcNow2()-breakStart >= Settings::breakDuration()) {
 				onBreak = false;
 				breakJustEnded = true;
 			}
@@ -168,5 +163,11 @@ class $modify(ESHPlayerObject, PlayerObject) {
 		} else {
 			PlayerObject::update(deltaTime);
 		}
+	}
+};
+
+class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
+	virtual void postUpdate(float dt) {
+		LevelEditorLayer::postUpdate(dt);
 	}
 };
