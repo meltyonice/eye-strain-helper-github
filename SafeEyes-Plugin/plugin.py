@@ -18,7 +18,6 @@ from threading import *
 import subprocess
 import time
 import http.server
-import socketserver
 
 s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
@@ -37,12 +36,13 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                     logging.debug("[ESH-Integration] Got heartbeat!")
                     s_isGDAlive = True
                     s_lastHeartbeatTime = time.time()
-                    self.send_response_only(200, "Got heartbeat!")
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/plain")
+                    self.end_headers()
+                    self.wfile.write(b"200")
 
         except:
             pass
-    def send_error(self):
-        pass
 
     def log_request():
         pass
@@ -52,9 +52,9 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def try_startDaemon():
-    with socketserver.TCPServer(("", 7289), RequestHandler) as httpd:
-        logging.debug("Started HTTP daemon!")
-        httpd.serve_forever()
+    httpd = HTTPServer(('localhost', 7289), RequestHandler)
+    logging.debug("Started HTTP daemon!")
+    httpd.serve_forever()
 
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
