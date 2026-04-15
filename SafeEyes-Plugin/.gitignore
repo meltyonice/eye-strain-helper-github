@@ -1,0 +1,4 @@
+.venv
+.python_version
+test-plugin.sh
+uv.lock

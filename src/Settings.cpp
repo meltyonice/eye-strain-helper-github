@@ -27,6 +27,14 @@ bool Settings::fiveSecondInterval() {
     return returnme;
 }
 
+bool Settings::shouldIntegrateEyeSaver() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("shouldIntegrateEyeSaver",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("shouldIntegrateEyeSaver")
+    );
+    return returnme;
+}
+
 int64_t Settings::breakDuration() {
     static int64_t returnme = (
         listenForSettingChanges<int64_t>("breakDuration",[](int64_t value) { returnme = value; }),

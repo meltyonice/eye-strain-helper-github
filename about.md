@@ -10,3 +10,7 @@ This mod is designed to help prevent eye strain without interrupting your runs l
 - Interoperability with Safe Eyes (incomplete, see WIP)
 
 ## WIP
+
+## Attribution 
+
+The IPC library in this mod was sourced from `github.com/CppPhil/named_pipe` 

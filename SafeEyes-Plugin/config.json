@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Geometry Dash Eye Strain Helper Integration",
+        "description": "Adds integration with the Geometry Dash mod 'Eye Strain Helper'",
+        "version": "0.1"
+    },
+    "dependencies": {
+        "python_modules": [],
+        "shell_commands": [],
+        "operating_systems": [],
+        "desktop_environments": [],
+        "resources": []
+    },
+    "settings": [],
+    "break_override_allowed": true
+}

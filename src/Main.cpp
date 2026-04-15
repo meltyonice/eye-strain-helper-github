@@ -8,6 +8,7 @@
 #include <Geode/binding/GJGameLevel.hpp>
 #include <Geode/binding/GameObject.hpp>
 #include <Geode/binding/LabelGameObject.hpp>
+#include <Geode/binding/MenuLayer.hpp>
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/binding/PlayerObject.hpp>
 #include <Geode/binding/UILayer.hpp>
@@ -26,10 +27,14 @@ using namespace geode::prelude;
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/UILayer.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
+#include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/MenuLayer.hpp>
 
+#include "EyeSaverIntegration.hpp"
 #include <string>
 #include "BreakPopup.hpp"
 #include "Settings.hpp"
+
 
 using std::string;
 
@@ -48,6 +53,8 @@ long calcNow2() {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+long lastHeartbeat = 0;
+
 long modLoad = calcNow2();
 long lastBreak = calcNow2();
 long breakStart;
@@ -64,6 +71,17 @@ void startBreak() {
 	onBreak = true;
 }
 
+class $modify(ESHMenuLayer, MenuLayer) {
+	bool init() {
+		if(!MenuLayer::init()) {
+			return false;
+		}
+		if(Settings::shouldIntegrateEyeSaver()) {
+			EyeSaverIntegration::sendHeartbeat();
+		}
+		return true;
+	}
+};
 
 class $modify(ESHPlayLayer, PlayLayer) {
 	struct Fields {
@@ -84,6 +102,10 @@ class $modify(ESHPlayLayer, PlayLayer) {
 		m_fields->eyeStrainHelperUI = CCNode::create();
         m_fields->eyeStrainHelperUI->setTag(10420);
         m_fields->eyeStrainHelperUI->setZOrder(1);
+
+		if(lastHeartbeat == 0 && Settings::shouldIntegrateEyeSaver()) {
+			lastHeartbeat = calcNow2();
+		} 
 
 
 		//std::stringstream labelStr;
@@ -137,6 +159,12 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			breakJustEnded = false;
 			m_fields->breakPopup->destroy();
 		}
+
+		if(calcNow2()-lastHeartbeat >= 10 && Settings::shouldIntegrateEyeSaver()) {
+			lastHeartbeat = calcNow2();
+			EyeSaverIntegration::sendHeartbeat();
+		} 
+
 	}
 };
 
@@ -218,11 +246,33 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 		} else if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) {
 			startBreak();
 		}
+		if(calcNow2()-lastHeartbeat >= 10 && Settings::shouldIntegrateEyeSaver()) {
+			lastHeartbeat = calcNow2();
+			EyeSaverIntegration::sendHeartbeat();
+		} 
 		if(breakJustEnded) {
 			//LevelEditorLayer::resumeAudio();
 			breakJustEnded = false;
 			m_fields->breakPopup->destroy();
 		}
 		LevelEditorLayer::draw();
-	};
+	};	
+};
+
+class $modify(ESHEditorUI, EditorUI) {
+	void onPause(CCObject* sender) {
+		if(onBreak) {
+
+		} else {
+			EditorUI::onPause(sender);
+		}
+	}
+
+	void onCreateObject(int id) {
+		if(onBreak) {
+
+		} else {
+			EditorUI::onCreateObject(id);
+		}
+	}
 };
