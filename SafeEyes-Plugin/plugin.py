@@ -28,11 +28,16 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         global s_isGDAlive
         global s_lastHeartbeatTime
         try:
-            if self.path == "/heartbeat" and self.headers.get("User-Agent") == "eye-strain-helper":
-                logging.debug("[ESH-Integration] Got heartbeat!")
-                s_isGDAlive = True
-                s_lastHeartbeatTime = time.time()
-                self.send_response_only(200, "Got heartbeat!")
+            if self.client_address != "127.0.0.1":
+                logging.warn("SECURITY WARNING: The ESH daemon got a request from an address other than your PC! Make sure it isn't exposed to the internet!")
+                pass
+            else:
+                if self.path == "/heartbeat" and self.headers.get("User-Agent") == "eye-strain-helper":
+                    logging.debug("[ESH-Integration] Got heartbeat!")
+                    s_isGDAlive = True
+                    s_lastHeartbeatTime = time.time()
+                    self.send_response_only(200, "Got heartbeat!")
+
         except:
             pass
     def send_error(self):
@@ -47,8 +52,8 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
 def try_startDaemon():
     with socketserver.TCPServer(("", 7289), RequestHandler) as httpd:
-            httpd.serve_forever()
-            logging.debug("Started HTTP daemon!")
+        logging.debug("Started HTTP daemon!")
+        httpd.serve_forever()
 
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
@@ -56,8 +61,8 @@ def initListenServer():
     try:
         try_startDaemon()
     except:
-        logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 5 seconds.")
-        time.sleep(5)
+        logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 15 seconds.")
+        time.sleep(15)
         ct = 0
         while ct < 5:
             try:
@@ -65,8 +70,9 @@ def initListenServer():
                 break
             except:
                 ct += 1
-                logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 5 seconds. (Attempt %s/5)" % ct+1)
-                time.sleep(5)
+                if ct <= 5:
+                    logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 15 seconds. (Attempt %s/5)" % (ct+1))
+                    time.sleep(15)
         
 
 def init(ctx, safeeyes_config, plugin_config):
