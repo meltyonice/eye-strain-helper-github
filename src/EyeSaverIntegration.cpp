@@ -4,5 +4,5 @@
 
 void EyeSaverIntegration::sendHeartbeat() {
     geode::utils::web::WebRequest req = geode::utils::web::WebRequest();
-    
+    auto future = req.get(url);
 }

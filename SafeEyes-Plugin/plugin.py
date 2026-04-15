@@ -24,12 +24,13 @@ s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
 
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_HEAD(self):
+    def do_GET(self):
         global s_isGDAlive
         global s_lastHeartbeatTime
         try:
-            if self.client_address != "127.0.0.1":
+            if self.client_address[0] != "127.0.0.1":
                 logging.warn("SECURITY WARNING: The ESH daemon got a request from an address other than your PC! Make sure it isn't exposed to the internet!")
+                print("Odd address: %s" % self.client_address)
                 pass
             else:
                 if self.path == "/heartbeat" and self.headers.get("User-Agent") == "eye-strain-helper":
