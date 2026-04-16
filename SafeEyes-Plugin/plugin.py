@@ -17,64 +17,41 @@ from safeeyes.model import State
 from threading import *
 import subprocess
 import time
-import http.server
-import socketserver
+import ipckit
+import subprocess
 
 s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
 
-class RequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        global s_isGDAlive
-        global s_lastHeartbeatTime
-        try:
-            if self.client_address[0] != "127.0.0.1":
-                logging.warn("SECURITY WARNING: The ESH daemon got a request from an address other than your PC! Make sure it isn't exposed to the internet!")
-                print("Odd address: %s" % self.client_address)
-                pass
-            else:
-                if self.path == "/heartbeat" and self.headers.get("User-Agent") == "eye-strain-helper":
-                    logging.debug("[ESH-Integration] Got heartbeat!")
-                    s_isGDAlive = True
-                    s_lastHeartbeatTime = time.time()
-                    self.send_response(200)
-                    self.send_header("Content-type", "text/plain")
-                    self.end_headers()
-                    self.wfile.write(b"200")
-
-        except:
-            pass
-
-    def log_request():
-        pass
-
-    def log_error():
-        pass
-
-
-def try_startDaemon():
-    logging.debug("Started HTTP daemon!")
-    with socketserver.TCPServer(("", 7289), RequestHandler) as httpd:
-        httpd.serve_forever()
+def launchRSListener():
+    try:
+        subprocess.run("./listener")
+    except FileNotFoundError:
+        logging.error("Listener server is missing!")
 
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
     global s_isGDAlive
+    global s_lastHeartbeatTime
+    global shm
     try:
-        try_startDaemon()
-    except:
-        logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 15 seconds.")
-        time.sleep(15)
-        ct = 0
-        while ct < 5:
-            try:
-                try_startDaemon()
-                break
-            except:
-                ct += 1
-                if ct <= 5:
-                    logging.error("[ESH-Integration] Failed to start HTTP daemon. Retrying in 15 seconds. (Attempt %s/5)" % (ct+1))
-                    time.sleep(15)
+        shm = ipckit.SharedMemory.create("eshs2rs", 512)
+    except FileExistsError:
+        shm = ipckit.SharedMemory.open("eshs2rs")
+        shm.write(0,bytes(512))
+    serverThread2 = Thread(target=launchRSListener)
+    serverThread2.daemon = True
+    serverThread2.start()
+    time.sleep(0.001)
+    sC = True
+    if shm.read(2,2) != b"11":
+        logging.debug("Couldn't detect listen server!")
+        sC = False
+    while sC:
+        time.sleep(0.001)
+        if shm.read(6,9) == b"HEARTBEAT":
+            logging.debug("Got heartbeat!")
+            shm.write(6,bytes(9))
         
 
 def init(ctx, safeeyes_config, plugin_config):

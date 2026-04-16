@@ -5,7 +5,7 @@
         "version": "0.1"
     },
     "dependencies": {
-        "python_modules": [],
+        "python_modules": ["ipckit"],
         "shell_commands": [],
         "operating_systems": [],
         "desktop_environments": [],

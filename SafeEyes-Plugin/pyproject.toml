@@ -5,5 +5,6 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "ipckit>=0.1.6",
     "safeeyes>=3.4.0",
 ]

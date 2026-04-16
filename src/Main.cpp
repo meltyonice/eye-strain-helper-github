@@ -76,9 +76,6 @@ class $modify(ESHMenuLayer, MenuLayer) {
 		if(!MenuLayer::init()) {
 			return false;
 		}
-		if(Settings::shouldIntegrateEyeSaver()) {
-			EyeSaverIntegration::sendHeartbeat();
-		}
 		return true;
 	}
 };
@@ -243,13 +240,9 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 
 			//LevelEditorLayer::pauseAudio();
 
-		} else if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) {
+		} else if((calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) && !Settings::shouldIntegrateEyeSaver()) {
 			startBreak();
 		}
-		if(calcNow2()-lastHeartbeat >= 10 && Settings::shouldIntegrateEyeSaver()) {
-			lastHeartbeat = calcNow2();
-			EyeSaverIntegration::sendHeartbeat();
-		} 
 		if(breakJustEnded) {
 			//LevelEditorLayer::resumeAudio();
 			breakJustEnded = false;
