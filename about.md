@@ -12,4 +12,4 @@ This mod is designed to help prevent eye strain without interrupting your runs l
     - [x] Option to prefer Safe Eyes breaks while in the editor
 - More planned!
 
-If you have any questions or bug reports, DM `meltyonice` on discord.
+If you have any questions, DM `meltyonice` on discord.
