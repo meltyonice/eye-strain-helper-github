@@ -1,3 +1,4 @@
+#include "Main.hpp"
 #include "Geode/cocos/base_nodes/CCNode.h"
 #include "Geode/cocos/cocoa/CCObject.h"
 #include "Geode/cocos/label_nodes/CCLabelBMFont.h"
@@ -29,8 +30,9 @@ using namespace geode::prelude;
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/CheckpointGameObject.hpp>
 
-#include "EyeSaverIntegration.hpp"
+#include "SafeEyesIntegration.hpp"
 #include <string>
 #include "BreakPopup.hpp"
 #include "Settings.hpp"
@@ -59,16 +61,19 @@ long modLoad = calcNow2();
 long lastBreak = calcNow2();
 long breakStart;
 
-bool onBreak = false;
+bool EyeStrainHelper::onBreak = false;
+bool EyeStrainHelper::pingWarningQueued = false;
+bool EyeStrainHelper::hasShownPingWarningThisLaunch = false;
 bool breakJustStarted = false;
 bool breakJustEnded = false;
 
-void startBreak() {
+
+void EyeStrainHelper::startBreak() {
 	breakStart = calcNow2();
 	lastBreak = calcNow2();
 	breakJustStarted = true;
 	breakJustEnded = false;
-	onBreak = true;
+	EyeStrainHelper::onBreak = true;
 }
 
 class $modify(ESHMenuLayer, MenuLayer) {
@@ -76,7 +81,38 @@ class $modify(ESHMenuLayer, MenuLayer) {
 		if(!MenuLayer::init()) {
 			return false;
 		}
+		if(Settings::shouldIntegrateSafeEyes() && !EyeStrainHelper::hasShownPingWarningThisLaunch) {
+			SafeEyesIntegration::ping();
+		}
 		return true;
+	}
+
+	void onCreator(CCObject* sender) {
+		if(EyeStrainHelper::pingWarningQueued) {
+			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
+			EyeStrainHelper::pingWarningQueued = false;
+		} else {
+			MenuLayer::onCreator(sender);
+		}
+		
+	}
+
+	void onPlay(CCObject* sender) {
+		if(EyeStrainHelper::pingWarningQueued) {
+			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
+			EyeStrainHelper::pingWarningQueued = false;
+		} else {
+			MenuLayer::onPlay(sender);
+		}
+	}
+
+	void onGarage(CCObject* sender) {
+		if(EyeStrainHelper::pingWarningQueued) {
+			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
+			EyeStrainHelper::pingWarningQueued = false;
+		} else {
+			MenuLayer::onGarage(sender);
+		}
 	}
 };
 
@@ -100,7 +136,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
         m_fields->eyeStrainHelperUI->setTag(10420);
         m_fields->eyeStrainHelperUI->setZOrder(1);
 
-		if(lastHeartbeat == 0 && Settings::shouldIntegrateEyeSaver()) {
+		if(lastHeartbeat == 0 && Settings::shouldIntegrateSafeEyes()) {
 			lastHeartbeat = calcNow2();
 		} 
 
@@ -123,7 +159,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 	}
 
 	void pauseGame(bool unfocused) {
-		if(!onBreak) {
+		if(!EyeStrainHelper::onBreak) {
 			PlayLayer::pauseGame(unfocused);
 			if(Settings::timingAlertEnabled()) {
 				std::stringstream alertContent;
@@ -136,7 +172,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
 
 	void postUpdate(float deltaTime) {
 		PlayLayer::postUpdate(deltaTime);
-		if(onBreak) {
+		if(EyeStrainHelper::onBreak) {
 			//m_fields->eyeStrainHelperUI
 			if(breakJustStarted) {
 				breakJustStarted = false;
@@ -157,26 +193,35 @@ class $modify(ESHPlayLayer, PlayLayer) {
 			m_fields->breakPopup->destroy();
 		}
 
-		if(calcNow2()-lastHeartbeat >= 10 && Settings::shouldIntegrateEyeSaver()) {
+		if(calcNow2()-lastHeartbeat >= 10 && Settings::safeEyesBlockInLevels()) {
 			lastHeartbeat = calcNow2();
-			EyeSaverIntegration::sendHeartbeat();
+			SafeEyesIntegration::sendHeartbeat();
 		} 
 
 	}
 };
 
-
+class $modify(ESHCheckpointGameObject, CheckpointGameObject) {
+	void triggerObject(GJBaseGameLayer* layer, int uniqueID, gd::vector<int> const* remapKeys) {
+		CheckpointGameObject::triggerObject(layer, uniqueID, remapKeys);
+		if(Settings::breakOnPlatformerCP() && Settings::enabled() && calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60) {
+			EyeStrainHelper::startBreak();
+		}
+	}
+};
 
 class $modify(ESHPlayerObject, PlayerObject) {
 	void playerDestroyed(bool noeffects) {
 		PlayerObject::playerDestroyed(noeffects);
-		if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
-			startBreak();
+		if(Settings::enabled()) {
+			if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
+				EyeStrainHelper::startBreak();
+			}
 		}
 	}
 
 	void update(float deltaTime) {
-		if(onBreak) {
+		if(EyeStrainHelper::onBreak) {
 			if(Settings::breakDuration() == NULL) {
 				Mod::get()->setSettingValue("breakDuration", 30);
 			}
@@ -184,7 +229,7 @@ class $modify(ESHPlayerObject, PlayerObject) {
 			//AppDelegate::get()->pauseSound();
 
 			if(calcNow2()-breakStart >= Settings::breakDuration()) {
-				onBreak = false;
+				EyeStrainHelper::onBreak = false;
 				breakJustEnded = true;
 			}
 
@@ -219,7 +264,7 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 	}
 
 	void draw() {
-		if(onBreak) {
+		if(EyeStrainHelper::onBreak) {
 			if(Settings::breakDuration() == NULL) {
 				Mod::get()->setSettingValue("breakDuration", 30);
 			}
@@ -227,7 +272,7 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 			//AppDelegate::get()->pauseSound();
 
 			if(calcNow2()-breakStart >= Settings::breakDuration()) {
-				onBreak = false;
+				EyeStrainHelper::onBreak = false;
 				breakJustEnded = true;
 			}
 
@@ -240,9 +285,17 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 
 			//LevelEditorLayer::pauseAudio();
 
-		} else if((calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) && !Settings::shouldIntegrateEyeSaver()) {
-			startBreak();
 		}
+		if(Settings::enabled()) {
+			if((calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) && (!Settings::shouldIntegrateSafeEyes() && !Settings::safeEyesOverESHinEditor())) {
+				EyeStrainHelper::startBreak();
+			}
+			if(calcNow2()-lastHeartbeat >= 10 && !Settings::safeEyesOverESHinEditor()) {
+				lastHeartbeat = calcNow2();
+				SafeEyesIntegration::sendHeartbeat();
+			} 
+		}
+		
 		if(breakJustEnded) {
 			//LevelEditorLayer::resumeAudio();
 			breakJustEnded = false;
@@ -254,7 +307,7 @@ class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
 
 class $modify(ESHEditorUI, EditorUI) {
 	void onPause(CCObject* sender) {
-		if(onBreak) {
+		if(EyeStrainHelper::onBreak) {
 
 		} else {
 			EditorUI::onPause(sender);
@@ -262,7 +315,7 @@ class $modify(ESHEditorUI, EditorUI) {
 	}
 
 	void onCreateObject(int id) {
-		if(onBreak) {
+		if(EyeStrainHelper::onBreak) {
 
 		} else {
 			EditorUI::onCreateObject(id);

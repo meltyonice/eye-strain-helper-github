@@ -24,15 +24,13 @@ s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
 
 def launchRSListener():
-    try:
-        subprocess.run("./listener")
-    except FileNotFoundError:
-        logging.error("Listener server is missing!")
+    subprocess.run("./eshlistener")
 
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
     global s_isGDAlive
     global s_lastHeartbeatTime
+    global serverThread2
     global shm
     try:
         shm = ipckit.SharedMemory.create("eshs2rs", 512)
@@ -65,6 +63,12 @@ def init(ctx, safeeyes_config, plugin_config):
     serverThread = Thread(target=initListenServer)
     serverThread.daemon = True
     serverThread.start()
+
+def disable() -> None:
+    subprocess.run(["killall", "eshlistener"])
+
+def on_stop():
+    subprocess.run(["killall", "eshlistener"])
 
 def on_start_break(break_obj):
 

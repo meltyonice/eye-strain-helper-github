@@ -27,10 +27,26 @@ bool Settings::fiveSecondInterval() {
     return returnme;
 }
 
-bool Settings::shouldIntegrateEyeSaver() {
+bool Settings::shouldIntegrateSafeEyes() {
     static bool returnme = (
-        listenForSettingChanges<bool>("shouldIntegrateEyeSaver",[](bool value) { returnme = value; }),
-        getMod()->getSettingValue<bool>("shouldIntegrateEyeSaver")
+        listenForSettingChanges<bool>("shouldIntegrateSafeEyes",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("shouldIntegrateSafeEyes")
+    );
+    return returnme;
+}
+
+bool Settings::safeEyesBlockInLevels() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("safeEyesBlockInLevels",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("safeEyesBlockInLevels")
+    );
+    return returnme;
+}
+
+bool Settings::safeEyesOverESHinEditor() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("safeEyesOverESHinEditor",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("safeEyesOverESHinEditor")
     );
     return returnme;
 }
@@ -47,6 +63,22 @@ int64_t Settings::minutesBetweenBreaks() {
     static int64_t returnme = (
         listenForSettingChanges<int64_t>("betweenBreaks",[](int64_t value) { returnme = value; }),
         getMod()->getSettingValue<int64_t>("betweenBreaks")
+    );
+    return returnme;
+}
+
+bool Settings::breakOnPlatformerCP() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("breakOnPlatformerCP",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("breakOnPlatformerCP")
+    );
+    return returnme;
+}
+
+bool Settings::enabled() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("enabled",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("enabled")
     );
     return returnme;
 }

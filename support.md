@@ -1,1 +1,1 @@
-Edit this file to change your mod's support info, or delete it if you don't need it.
+I'll make a ko-fi or something some day

@@ -1,8 +1,9 @@
 [package]
-name = "listener"
+name = "eshlistener"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+ascii = "1.1.0"
 ipckit = "0.1.6"
 tiny_http = "0.12"

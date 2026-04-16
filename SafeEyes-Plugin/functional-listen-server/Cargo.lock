@@ -63,6 +63,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
+name = "eshlistener"
+version = "0.1.0"
+dependencies = [
+ "ascii",
+ "ipckit",
+ "tiny_http",
+]
+
+[[package]]
 name = "httpdate"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -98,14 +107,6 @@ name = "libc"
 version = "0.2.185"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f"
-
-[[package]]
-name = "listener"
-version = "0.1.0"
-dependencies = [
- "ipckit",
- "tiny_http",
-]
 
 [[package]]
 name = "lock_api"

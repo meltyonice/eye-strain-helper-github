@@ -13,7 +13,19 @@
 	"links": {
 		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
 	},
-	"settings": {
+	"tags": [
+		"utility",
+		"interface",
+		"offline",
+		"universal"
+	],
+	"resources": {
+		"files": [
+			"resources/*.ogg"
+		]
+	},
+	"description": "Prevent eye strain without interrupting your attempts!",
+		"settings": {
 		"enabled": {
 			"type": "bool",
 			"name": "Enable Eye Strain Helper",
@@ -29,7 +41,13 @@
 			"name": "time between breaks (minutes)",
 			"default": 20
 		},
-		"shouldIntegrateEyeSaver": {
+		"breakOnPlatformerCP": {
+			"type": "bool",
+			"name": "start breaks on platformer checkpoints",
+			"description": "Allows breaks to start when you hit a checkpoint in platformer mode.",
+			"default": true
+		},
+		"shouldIntegrateSafeEyes": {
 			"type": "bool",
 			"name": "Eye Saver Integration",
 			"default": false,
@@ -37,27 +55,48 @@
 			"requires-restart": true,
 			"platforms": ["win"]
 		},
+		"safeEyesBlockInLevels": {
+			"type": "bool",
+			"name": "Block Safe Eyes in levels",
+			"description": "Prevents Safe Eyes breaks from occurring while you're playing levels",
+			"enable-if": "shouldIntegrateSafeEyes",
+			"default": true
+		},
+		"safeEyesOverESHinEditor": {
+			"type": "bool",
+			"name": "Prefer Safe Eyes in editor",
+			"description": "Unblocks Safe Eyes breaks in the editor & prevents Eye Strain Helper breaks while in the editor",
+			"enable-if": "shouldIntegrateSafeEyes",
+			"default": true
+		},
 		"debugTitle": {
 			"type": "title",
             "name": "Debugging"
 		},
+		"debugMode": {
+			"type": "bool",
+			"name": "Debug Mode",
+			"default": false
+		},
 		"timingAlertEnabled": {
 			"type": "bool",
 			"name": "enable timing info alert",
+			"enable-if": "debugMode",
 			"default": false
 		},
 		"breakEveryAttempt": {
 			"type": "bool",
 			"name": "strain break on every attempt",
+			"enable-if": "debugMode",
 			"default": false
 		},
 		"fiveSecondInterval": {
 			"type": "bool",
 			"name": "five second break interval in editor",
+			"enable-if": "debugMode",
 			"default": false
 		}
 	},
-	"description": "A mod that helps prevent eye strain without interrupting attempts like external software would.",
 	"dependencies": {
 		"geode.node-ids": ">=v1.20.0"
 	}

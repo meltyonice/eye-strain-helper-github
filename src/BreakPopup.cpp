@@ -14,6 +14,7 @@
 #include <Geode/binding/ButtonSprite.hpp>
 #include <Geode/binding/CCCountdown.hpp>
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
+#include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/binding/GJAccountManager.hpp>
 #include <Geode/binding/GJGameLevel.hpp>
 #include <Geode/binding/GJListLayer.hpp>
@@ -146,6 +147,6 @@ void BreakPopup::update() {
 
 void BreakPopup::destroy() {
     popupLayer->removeMeAndCleanup();
-    FMODAudioEngine::sharedEngine()->playEffect("magicExplosion.ogg");
+    FMODAudioEngine::sharedEngine()->playEffect("on_stop_break.ogg"_spr);
     //PlayLayer::get()-
 }
