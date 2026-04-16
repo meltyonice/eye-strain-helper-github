@@ -49,7 +49,7 @@
 		},
 		"shouldIntegrateSafeEyes": {
 			"type": "bool",
-			"name": "Eye Saver Integration",
+			"name": "Safe Eyes Integration",
 			"default": false,
 			"description": "Enables support for integration with the desktop program Safe Eyes. Requires the Safe Eyes plugin found in this mod 's git repository in order to work.",
 			"requires-restart": true,

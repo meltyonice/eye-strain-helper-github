@@ -9,7 +9,7 @@ A Geometry Dash mod that helps prevent eye strain without interrupting your atte
 - [x] Safe Eyes integration w/a custom plugin
     - [x] Option to block Safe Eyes breaks while playing levels
     - [x] Option to prefer Safe Eyes breaks while in the editor
-
+- More planned!
 
 
 ## Build instructions
