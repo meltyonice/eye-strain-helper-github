@@ -10,3 +10,5 @@ This mod is designed to help prevent eye strain without interrupting your runs l
 - [x] Safe Eyes integration w/a custom plugin
     - [x] Option to block Safe Eyes breaks while playing levels
     - [x] Option to prefer Safe Eyes breaks while in the editor
+
+If you have any questions or bug reports, DM `meltyonice` on discord.
