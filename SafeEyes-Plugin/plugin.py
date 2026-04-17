@@ -24,6 +24,7 @@ s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
 
 def launchRSListener():
+    os.chdir(".config/safeeyes/plugins/esh-integration/")
     subprocess.run("./eshlistener")
 
 def initListenServer():
@@ -32,6 +33,7 @@ def initListenServer():
     global s_lastHeartbeatTime
     global serverThread2
     global shm
+    #logging.debug(os.getcwd())
     try:
         shm = ipckit.SharedMemory.create("eshs2rs", 512)
     except FileExistsError:
