@@ -30,7 +30,7 @@ jobs:
 
       - name: Add GitHub remote
         run: |
-          git remote add github https://oauth2:${{ secrets.GH_TOKEN }}@github.com/tobias-weiss-ai-xr/opendesk-edu.git
+          git remote add github https://oauth2:${{ secrets.GH_TOKEN }}@github.com/meltyonice/eye-strain-helper-github.git
 
       - name: Sync to GitHub (with retry)
         run: |
