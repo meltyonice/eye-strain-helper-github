@@ -1,3 +1,10 @@
+# 1.1.0
+- Rewrote most of the code to attempt to fall in line with best practices
+- 
+- Made the break popup (in my opinion) more aesthetically pleasing
+- Added the ability to skip breaks
+
+
 # 1.0.2
 - Updated to Geode SDK 5.6.1
 - Fixed a bug that prevented the Safe Eyes integration from working properly outside of the developer environment (yes, I did the meme)

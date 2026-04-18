@@ -1,5 +1,4 @@
 #include "SafeEyesIntegration.hpp"
-#include "Geode/loader/Log.hpp"
 #include <Geode/utils/web.hpp>
 #include "Main.hpp"
 
@@ -13,7 +12,7 @@ void SafeEyesIntegration::sendHeartbeat() {
     SafeEyesIntegration::listener.spawn(
       req.header("User-Agent","eye-strain-helper").send("HEARTBEAT", "http://localhost:7289/"),
        [](geode::utils::web::WebResponse res) {
-                log::info("{}", res.string().unwrapOr("Fiddlesticks!"));
+                
     });
 }
 

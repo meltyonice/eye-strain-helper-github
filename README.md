@@ -2,7 +2,7 @@
 A Geometry Dash mod that helps prevent eye strain without interrupting your attempts.
 
 ## Features
-- [ ] Optional ability to skip breaks
+- [x] Optional ability to skip breaks
 - [x] Configurable time between breaks
 - [x] Configurable duration of breaks
 - [x] Configurable option to start breaks when hitting a checkpoint in platformer mode

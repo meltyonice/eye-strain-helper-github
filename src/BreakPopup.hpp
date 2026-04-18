@@ -4,8 +4,6 @@
 #include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include "Geode/cocos/layers_scenes_transitions_nodes/CCLayer.h"
 #include "Geode/cocos/menu_nodes/CCMenu.h"
-#include "Geode/loader/Formatter.hpp"
-#include "Geode/loader/Log.hpp"
 #include "Geode/ui/Layout.hpp"
 #include "Geode/ui/NineSlice.hpp"
 #include "Main.hpp"
@@ -66,6 +64,7 @@ protected:
         if(Settings::allowSkipping()) {
             if(canSkipThisBreak()) {
                 auto skipSpr = ButtonSprite::create("Skip");
+                // @geode-ignore(unknown-resource)
                 skipSpr->updateBGImage("geode.loader/GE_button_05.png");
                 auto skipButton = CCMenuItemSpriteExtra::create(
                     skipSpr,
