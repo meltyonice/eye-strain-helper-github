@@ -1,9 +1,8 @@
 # 1.1.0
 - Rewrote most of the code to attempt to fall in line with best practices
-- 
+- Fixed a lot of bugs, more than I care to name
 - Made the break popup (in my opinion) more aesthetically pleasing
 - Added the ability to skip breaks
-
 
 # 1.0.2
 - Updated to Geode SDK 5.6.1
