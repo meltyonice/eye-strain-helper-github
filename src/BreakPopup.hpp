@@ -77,6 +77,7 @@ protected:
             }
             auto skipsLabel = CCLabelBMFont::create(fmt::format("Concurrent Skips: {}/{}", EyeStrainHelper::concurrentSkips, Settings::allowedSkips()).c_str(), "chatFont.fnt");
             skipsLabel->setAnchorPoint(CCPoint(0.5,0.0));
+            skipsLabel->setScale(0.75f);
             m_mainLayer->addChildAtPosition(skipsLabel, Anchor::Bottom);
         }
 
