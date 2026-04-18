@@ -11,14 +11,6 @@ bool Settings::breakEveryAttempt() {
     return returnme;
 }
 
-bool Settings::timingAlertEnabled() {
-    static bool returnme = (
-        listenForSettingChanges<bool>("timingAlertEnabled",[](bool value) { returnme = value; }),
-        getMod()->getSettingValue<bool>("timingAlertEnabled")
-    );
-    return returnme;
-}
-
 bool Settings::fiveSecondInterval() {
     static bool returnme = (
         listenForSettingChanges<bool>("fiveSecondInterval",[](bool value) { returnme = value; }),
@@ -26,6 +18,32 @@ bool Settings::fiveSecondInterval() {
     );
     return returnme;
 }
+
+
+bool Settings::instantTowerLoad() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("instantTowerLoad",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("instantTowerLoad")
+    );
+    return returnme;
+}
+
+bool Settings::allowSkipping() {
+    static bool returnme = (
+        listenForSettingChanges<bool>("allowSkipping",[](bool value) { returnme = value; }),
+        getMod()->getSettingValue<bool>("allowSkipping")
+    );
+    return returnme;
+}
+
+int64_t Settings::allowedSkips() {
+    static int64_t returnme = (
+        listenForSettingChanges<int64_t>("allowedSkips",[](int64_t value) { returnme = value; }),
+        getMod()->getSettingValue<int64_t>("allowedSkips")
+    );
+    return returnme;
+}
+
 
 bool Settings::shouldIntegrateSafeEyes() {
     static bool returnme = (

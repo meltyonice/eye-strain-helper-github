@@ -1,324 +1,178 @@
 #include "Main.hpp"
-#include "Geode/cocos/base_nodes/CCNode.h"
-#include "Geode/cocos/cocoa/CCObject.h"
-#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
-#include "Geode/modify/Modify.hpp"
-#include <Geode/Geode.hpp>
-#include <Geode/binding/FLAlertLayer.hpp>
-#include <Geode/binding/GJBaseGameLayer.hpp>
-#include <Geode/binding/GJGameLevel.hpp>
-#include <Geode/binding/GameObject.hpp>
-#include <Geode/binding/LabelGameObject.hpp>
-#include <Geode/binding/MenuLayer.hpp>
-#include <Geode/binding/PlayLayer.hpp>
-#include <Geode/binding/PlayerObject.hpp>
-#include <Geode/binding/UILayer.hpp>
-#include <chrono>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <ostream>
-#include <sstream>
-
-using namespace geode::prelude;
-
-#include <Geode/modify/MenuLayer.hpp>
-#include <Geode/modify/PlayLayer.hpp>
-#include <Geode/binding/AppDelegate.hpp>
-#include <Geode/modify/PlayerObject.hpp>
-#include <Geode/modify/UILayer.hpp>
-#include <Geode/modify/LevelEditorLayer.hpp>
-#include <Geode/modify/EditorUI.hpp>
-#include <Geode/modify/MenuLayer.hpp>
-#include <Geode/modify/CheckpointGameObject.hpp>
-
+#include "Geode/loader/Formatter.hpp"
+#include "Geode/loader/Log.hpp"
+#include "Geode/utils/cocos.hpp"
 #include "SafeEyesIntegration.hpp"
+#include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/GameLevelManager.hpp>
+#include <Geode/binding/PlayLayer.hpp>
+#include <fmt/format.h>
 #include <string>
 #include "BreakPopup.hpp"
 #include "Settings.hpp"
 
+using namespace geode::prelude;
 
-using std::string;
+#include <Geode/modify/UILayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/PlayerObject.hpp>
+#include <Geode/modify/GJBaseGameLayer.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/LevelEditorLayer.hpp>
+#include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/CheckpointGameObject.hpp>
 
-//long calcNow2() {
-//	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-//}
-
-//const auto modLoad = calcNow2();
-//auto lastBreak = calcNow2();
-//long breakStart;
-//
-//bool onBreak = false;
-//bool breakJustStarted = false;
-
-long calcNow2() {
+long EyeStrainHelper::calcNow() {
 	return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-long lastHeartbeat = 0;
+long EyeStrainHelper::lastHeartbeat = 0;
 
-long modLoad = calcNow2();
-long lastBreak = calcNow2();
+long modLoad = EyeStrainHelper::calcNow();
+long lastBreak = EyeStrainHelper::calcNow();
 long breakStart;
 
 bool EyeStrainHelper::onBreak = false;
 bool EyeStrainHelper::pingWarningQueued = false;
 bool EyeStrainHelper::hasShownPingWarningThisLaunch = false;
+bool EyeStrainHelper::breakJustEnded = false;
 bool breakJustStarted = false;
-bool breakJustEnded = false;
+bool hasInstaLoadedTower = false;
+bool inputLockCapturedState = false;
 
+int EyeStrainHelper::concurrentSkips = 0;
+
+BreakPopup* breakPopup;
 
 void EyeStrainHelper::startBreak() {
-	breakStart = calcNow2();
-	lastBreak = calcNow2();
+	breakStart = EyeStrainHelper::calcNow();
+	lastBreak = EyeStrainHelper::calcNow();
 	breakJustStarted = true;
-	breakJustEnded = false;
+	EyeStrainHelper::breakJustEnded = false;
 	EyeStrainHelper::onBreak = true;
 }
-
-class $modify(ESHMenuLayer, MenuLayer) {
-	bool init() {
-		if(!MenuLayer::init()) {
-			return false;
-		}
-		if(Settings::shouldIntegrateSafeEyes() && !EyeStrainHelper::hasShownPingWarningThisLaunch) {
-			SafeEyesIntegration::ping();
-		}
-		return true;
-	}
-
-	void onCreator(CCObject* sender) {
-		if(EyeStrainHelper::pingWarningQueued) {
-			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
-			EyeStrainHelper::pingWarningQueued = false;
-		} else {
-			MenuLayer::onCreator(sender);
-		}
-		
-	}
-
-	void onPlay(CCObject* sender) {
-		if(EyeStrainHelper::pingWarningQueued) {
-			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
-			EyeStrainHelper::pingWarningQueued = false;
-		} else {
-			MenuLayer::onPlay(sender);
-		}
-	}
-
-	void onGarage(CCObject* sender) {
-		if(EyeStrainHelper::pingWarningQueued) {
-			FLAlertLayer::create("Eye Strain Helper", "You have Safe Eyes integration turned on, but the safe eyes plugin couldn't be reached!", "OK")->show();
-			EyeStrainHelper::pingWarningQueued = false;
-		} else {
-			MenuLayer::onGarage(sender);
-		}
-	}
-};
-
-class $modify(ESHPlayLayer, PlayLayer) {
-	struct Fields {
-		CCNode* eyeStrainHelperUI;
-		long timeLoaded;
-		BreakPopup* breakPopup;
-	};
-
-	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-		if (!PlayLayer::init(level, useReplay, dontCreateObjects)) {
-			return false;
-		}
-
-		m_fields->timeLoaded = calcNow2();
-
-		auto winSize = CCDirector::sharedDirector()->getWinSize();
-
-		m_fields->eyeStrainHelperUI = CCNode::create();
-        m_fields->eyeStrainHelperUI->setTag(10420);
-        m_fields->eyeStrainHelperUI->setZOrder(1);
-
-		if(lastHeartbeat == 0 && Settings::shouldIntegrateSafeEyes()) {
-			lastHeartbeat = calcNow2();
-		} 
-
-
-		//std::stringstream labelStr;
-		//labelStr<<"Time since load: "<<now-lastBreak;
-		//m_fields->testLabel = CCLabelBMFont::create(labelStr.str().data(), "bigFont.fnt");
-		//m_fields->testLabel->setPosition({360, winSize.height - 35});
-        //m_fields->testLabel->setScale(0.5F);
-        //m_fields->testLabel->setOpacity(255 / 2);
-		//m_fields->testLabel->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
-        //m_fields->testLabel->setZOrder(1000);
-        //m_fields->testLabel->setTag(10420); // prevent PlayLayer from interfering
-		//m_fields->testLabel->setVisible(Mod::get()->getSettingValue<bool>("enabled"));
-
-		//m_fields->eyeStrainHelperUI->addChild(m_fields->testLabel);
-		this->addChild(m_fields->eyeStrainHelperUI);
-
-		return true;
-	}
-
-	void pauseGame(bool unfocused) {
-		if(!EyeStrainHelper::onBreak) {
-			PlayLayer::pauseGame(unfocused);
-			if(Settings::timingAlertEnabled()) {
-				std::stringstream alertContent;
-				long now = calcNow2();
-				alertContent<<"Time since epoch: "<<now<<std::endl<<"Time since PlayLayer load: "<<now-m_fields->timeLoaded<<std::endl<<"Time since last break: "<<now-lastBreak<<std::endl<<"Time since mod loaded: "<<now-modLoad<<std::endl<<"Break Duration: "<<Settings::breakDuration();
-				FLAlertLayer::create("Eye Strain Helper", alertContent.str().data(), "OK")->show();
-			}
-		}
-	}
-
-	void postUpdate(float deltaTime) {
-		PlayLayer::postUpdate(deltaTime);
-		if(EyeStrainHelper::onBreak) {
-			//m_fields->eyeStrainHelperUI
-			if(breakJustStarted) {
-				breakJustStarted = false;
-				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration(), 0);
-			}
-
-			m_fields->breakPopup->update();
-
-			PlayLayer::pauseAudio();
-		}
-		if(breakJustEnded) {
-			PlayLayer::resumeAudio();
-			if(PlayLayer::m_isPlatformer) {
-				PlayLayer::m_attempts--;
-				PlayLayer::resetLevel();
-			}
-			breakJustEnded = false;
-			m_fields->breakPopup->destroy();
-		}
-
-		if(calcNow2()-lastHeartbeat >= 10 && Settings::safeEyesBlockInLevels()) {
-			lastHeartbeat = calcNow2();
-			SafeEyesIntegration::sendHeartbeat();
-		} 
-
-	}
-};
 
 class $modify(ESHCheckpointGameObject, CheckpointGameObject) {
 	void triggerObject(GJBaseGameLayer* layer, int uniqueID, gd::vector<int> const* remapKeys) {
 		CheckpointGameObject::triggerObject(layer, uniqueID, remapKeys);
-		if(Settings::breakOnPlatformerCP() && Settings::enabled() && calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60) {
+		if(Settings::breakOnPlatformerCP() && Settings::enabled() && EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) {
 			EyeStrainHelper::startBreak();
 		}
 	}
 };
 
-class $modify(ESHPlayerObject, PlayerObject) {
-	void playerDestroyed(bool noeffects) {
-		PlayerObject::playerDestroyed(noeffects);
-		if(Settings::enabled()) {
-			if(calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
-				EyeStrainHelper::startBreak();
-			}
-		}
-	}
-
-	void update(float deltaTime) {
-		if(EyeStrainHelper::onBreak) {
-			if(Settings::breakDuration() == NULL) {
-				Mod::get()->setSettingValue("breakDuration", 30);
-			}
-
-			//AppDelegate::get()->pauseSound();
-
-			if(calcNow2()-breakStart >= Settings::breakDuration()) {
-				EyeStrainHelper::onBreak = false;
-				breakJustEnded = true;
-			}
-
-		} else {
-			PlayerObject::update(deltaTime);
-		}
-	}
+class $modify(ESHMenuLayer, MenuLayer) {
+    void onPlay(CCObject* sender) {
+        if(Settings::enabled()) {
+            if(Settings::instantTowerLoad() && !hasInstaLoadedTower) {
+                auto LevelManager = GameLevelManager::sharedState();
+                auto tower = LevelManager->getMainLevel(5001, false);
+                auto pl = PlayLayer::create(tower, false, false);
+                hasInstaLoadedTower = true;
+                switchToScene(pl);
+            } else {
+                MenuLayer::onPlay(sender);
+            }
+        }
+    }
 };
 
-class $modify(ESHLevelEditorLayer, LevelEditorLayer) {
-	struct Fields {
-		CCNode* eyeStrainHelperUI;
-		long timeLoaded;
-		BreakPopup* breakPopup;
-	};
+class $modify(ESHPlayLayer, PlayLayer) {
+    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+        if(Settings::enabled()) {
+            if(EyeStrainHelper::lastHeartbeat == 0 && Settings::shouldIntegrateSafeEyes()) {
+                SafeEyesIntegration::sendHeartbeat();
+		    } 
+        }
+        return true;
+    }
 
-	bool init(GJGameLevel* level, bool noUI) {
-		if(!LevelEditorLayer::init(level, noUI)) {
-			return false;
-		}
-
-		auto winSize = CCDirector::sharedDirector()->getWinSize();
-
-		m_fields->eyeStrainHelperUI = CCNode::create();
-        m_fields->eyeStrainHelperUI->setTag(10420);
-		m_fields->eyeStrainHelperUI->setID("eye-strain-helper-ui");
-        m_fields->eyeStrainHelperUI->setZOrder(1);
-
-		this->addChild(m_fields->eyeStrainHelperUI);
-
-		return true;
-	}
-
-	void draw() {
-		if(EyeStrainHelper::onBreak) {
-			if(Settings::breakDuration() == NULL) {
-				Mod::get()->setSettingValue("breakDuration", 30);
-			}
-
-			//AppDelegate::get()->pauseSound();
-
-			if(calcNow2()-breakStart >= Settings::breakDuration()) {
-				EyeStrainHelper::onBreak = false;
-				breakJustEnded = true;
-			}
-
-			if(breakJustStarted) {
-				breakJustStarted = false;
-				m_fields->breakPopup = BreakPopup::create(Settings::breakDuration(), 1);
-			}
-
-			m_fields->breakPopup->update();
-
-			//LevelEditorLayer::pauseAudio();
-
-		}
-		if(Settings::enabled()) {
-			if((calcNow2()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && calcNow2()-lastBreak >= 5)) && (!Settings::shouldIntegrateSafeEyes() && !Settings::safeEyesOverESHinEditor())) {
-				EyeStrainHelper::startBreak();
-			}
-			if(calcNow2()-lastHeartbeat >= 10 && !Settings::safeEyesOverESHinEditor()) {
-				lastHeartbeat = calcNow2();
-				SafeEyesIntegration::sendHeartbeat();
-			} 
-		}
-		
-		if(breakJustEnded) {
-			//LevelEditorLayer::resumeAudio();
-			breakJustEnded = false;
-			m_fields->breakPopup->destroy();
-		}
-		LevelEditorLayer::draw();
-	};	
+    void pauseGame(bool unfocused) {
+        if(!EyeStrainHelper::onBreak) {
+            PlayLayer::pauseGame(unfocused);
+        }
+    }
 };
 
 class $modify(ESHEditorUI, EditorUI) {
-	void onPause(CCObject* sender) {
-		if(EyeStrainHelper::onBreak) {
-
-		} else {
-			EditorUI::onPause(sender);
+    void draw() {
+        //log::debug("Called!");
+		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && (!Settings::safeEyesOverESHinEditor() || !Settings::shouldIntegrateSafeEyes())) {
+			EyeStrainHelper::startBreak();
 		}
-	}
 
-	void onCreateObject(int id) {
-		if(EyeStrainHelper::onBreak) {
+		if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && (!Settings::safeEyesOverESHinEditor() && !Settings::shouldIntegrateSafeEyes())) {
+			SafeEyesIntegration::sendHeartbeat();
+		} 
+        if(EyeStrainHelper::onBreak) {
+            if(breakJustStarted) {
+				breakJustStarted = false;
+				breakPopup = BreakPopup::create(Settings::breakDuration());
+		    }
 
-		} else {
-			EditorUI::onCreateObject(id);
+		    breakPopup->update();
+
+            if(EyeStrainHelper::calcNow()-breakStart >= Settings::breakDuration()) {
+		    	EyeStrainHelper::onBreak = false;
+		    	EyeStrainHelper::breakJustEnded = true;
+		    }
+
+            if(EyeStrainHelper::breakJustEnded) {
+			    EyeStrainHelper::breakJustEnded = false;
+			    breakPopup->destroy(false);
+		    }
+        }
+        EditorUI::draw();
+    }
+};
+
+class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
+    void update(float dt) {
+        if(Settings::enabled()) {
+        if(!EyeStrainHelper::onBreak) {
+            if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && Settings::safeEyesBlockInLevels()) {
+			    SafeEyesIntegration::sendHeartbeat();
+		    }
+            GJBaseGameLayer::update(dt);
+        } else {
+        if(!m_isEditor) {
+            if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && Settings::safeEyesBlockInLevels()) {
+			    SafeEyesIntegration::sendHeartbeat();
+		    }
+			if(breakJustStarted) {
+				breakJustStarted = false;
+				breakPopup = BreakPopup::create(Settings::breakDuration());
+			}
+			breakPopup->update();
+
+			PlayLayer::get()->pauseAudio();
+
+
+			if(EyeStrainHelper::calcNow()-breakStart >= Settings::breakDuration()) {
+				EyeStrainHelper::onBreak = false;
+				EyeStrainHelper::breakJustEnded = true;
+			}
+
+            if(EyeStrainHelper::breakJustEnded) {
+			    PlayLayer::get()->resumeAudio();
+			    EyeStrainHelper::breakJustEnded = false;
+			    breakPopup->destroy(false);
+		    }
+        }
+        }
+    }
+
+    }
+};
+
+class $modify(ESHPlayerObject, PlayerObject) {
+    void playerDestroyed(bool noeffects) {
+		PlayerObject::playerDestroyed(noeffects);
+		if(Settings::enabled()) {
+			if(EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
+				EyeStrainHelper::startBreak();
+			}
 		}
 	}
 };
