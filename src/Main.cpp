@@ -1,4 +1,5 @@
 #include "Main.hpp"
+#include "Geode/cocos/CCDirector.h"
 #include "Geode/utils/cocos.hpp"
 #include "SafeEyesIntegration.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
@@ -64,9 +65,10 @@ class $modify(ESHMenuLayer, MenuLayer) {
             if(Settings::instantTowerLoad() && !hasInstaLoadedTower) {
                 auto LevelManager = GameLevelManager::sharedState();
                 auto tower = LevelManager->getMainLevel(5001, false);
-                auto pl = PlayLayer::create(tower, false, false);
+                auto pl = PlayLayer::scene(tower, false, false);
                 hasInstaLoadedTower = true;
-                switchToScene(pl);
+				auto ccd = CCDirector::get();
+                ccd->replaceScene(pl);
             } else {
                 MenuLayer::onPlay(sender);
             }
@@ -78,7 +80,7 @@ class $modify(ESHPlayLayer, PlayLayer) {
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
         if(Settings::enabled()) {
-            if(EyeStrainHelper::lastHeartbeat == 0 && Settings::shouldIntegrateSafeEyes()) {
+            if(EyeStrainHelper::lastHeartbeat == 0 && Settings::safeEyesBlockInLevels()) {
                 SafeEyesIntegration::sendHeartbeat();
 		    } 
         }
@@ -95,11 +97,11 @@ class $modify(ESHPlayLayer, PlayLayer) {
 class $modify(ESHEditorUI, EditorUI) {
     void draw() {
         //log::debug("Called!");
-		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && (!Settings::safeEyesOverESHinEditor() || !Settings::shouldIntegrateSafeEyes())) {
+		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && !Settings::safeEyesOverESHinEditor()) {
 			EyeStrainHelper::startBreak();
 		}
 
-		if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && (!Settings::safeEyesOverESHinEditor() && !Settings::shouldIntegrateSafeEyes())) {
+		if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && !Settings::safeEyesOverESHinEditor() ) {
 			SafeEyesIntegration::sendHeartbeat();
 		} 
         if(EyeStrainHelper::onBreak) {

@@ -7,7 +7,6 @@ class Settings {
     static bool breakEveryAttempt();
     static bool fiveSecondInterval();
     static bool allowSkipping();
-    static bool shouldIntegrateSafeEyes();
     static bool safeEyesBlockInLevels();
     static bool safeEyesOverESHinEditor();
     static bool breakOnPlatformerCP();

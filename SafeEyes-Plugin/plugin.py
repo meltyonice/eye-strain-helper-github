@@ -51,6 +51,7 @@ def initListenServer():
         time.sleep(0.001)
         if shm.read(6,9) == b"HEARTBEAT":
             logging.debug("Got heartbeat!")
+            s_isGDAlive = True
             shm.write(6,bytes(9))
         
 
@@ -84,7 +85,7 @@ def on_start_break(break_obj):
     
     # notification_expire_time = short_break_interval if break_obj.is_short_break() else long_break_interval
     #if s_isGDAlive:
-    logging.debug(time.time()-s_lastHeartbeatTime)
+    #logging.debug(time.time()-s_lastHeartbeatTime)
     if time.time()-s_lastHeartbeatTime > 30 and s_isGDAlive:
         s_isGDAlive = False
     

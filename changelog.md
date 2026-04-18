@@ -1,3 +1,7 @@
+# 1.1.1
+- Safe Eyes integration settings are now in their own category
+- Improved settings handling to fix bugs and make code cleaner
+
 # 1.1.0
 - Rewrote most of the code to attempt to fall in line with best practices
 - Fixed a lot of bugs, more than I care to name
