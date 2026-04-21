@@ -1,17 +1,16 @@
 #include "Main.hpp"
-#include "Geode/cocos/CCDirector.h"
 #include "Geode/utils/cocos.hpp"
 #include "SafeEyesIntegration.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
 #include <Geode/binding/GameLevelManager.hpp>
 #include <Geode/binding/PlayLayer.hpp>
 #include <fmt/format.h>
+#include <stdlib.h>
 #include "BreakPopup.hpp"
 #include "Settings.hpp"
 
 using namespace geode::prelude;
 
-#include <Geode/modify/UILayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
@@ -37,6 +36,12 @@ bool EyeStrainHelper::breakJustEnded = false;
 bool breakJustStarted = false;
 bool hasInstaLoadedTower = false;
 bool inputLockCapturedState = false;
+
+long sinceUnsafeOperation = 0;
+
+bool isPopupSafe() {
+	return EyeStrainHelper::calcNow()-sinceUnsafeOperation >= 1;
+}
 
 int EyeStrainHelper::concurrentSkips = 0;
 
@@ -95,9 +100,15 @@ class $modify(ESHPlayLayer, PlayLayer) {
 };
 
 class $modify(ESHEditorUI, EditorUI) {
+	bool init(LevelEditorLayer* editorLayer) {
+		if (!EditorUI::init(editorLayer)) return false;
+		sinceUnsafeOperation = EyeStrainHelper::calcNow();
+		return true;
+	}
+
     void draw() {
         //log::debug("Called!");
-		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && !Settings::safeEyesOverESHinEditor()) {
+		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && !Settings::safeEyesOverESHinEditor() && isPopupSafe()) {
 			EyeStrainHelper::startBreak();
 		}
 
@@ -110,7 +121,9 @@ class $modify(ESHEditorUI, EditorUI) {
 				breakPopup = BreakPopup::create(Settings::breakDuration());
 		    }
 
-		    breakPopup->update();
+			if(isPopupSafe()) {
+				breakPopup->update();
+			}
 
             if(EyeStrainHelper::calcNow()-breakStart >= Settings::breakDuration()) {
 		    	EyeStrainHelper::onBreak = false;
@@ -135,7 +148,7 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 		    }
             GJBaseGameLayer::update(dt);
         } else {
-        if(!m_isEditor) {
+        if(!m_isEditor || m_isTestMode) {
             if(EyeStrainHelper::calcNow()-EyeStrainHelper::lastHeartbeat >= 10 && Settings::safeEyesBlockInLevels()) {
 			    SafeEyesIntegration::sendHeartbeat();
 		    }

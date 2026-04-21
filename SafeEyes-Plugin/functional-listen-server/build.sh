@@ -1,3 +1,3 @@
 #!/bin/sh
-cargo build
+cargo build --release
 mv target/debug/listener ../

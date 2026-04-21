@@ -1,3 +1,8 @@
+# 1.1.2
+- (Hopefully) fixed a crash when opening the editor on MacOS
+- All safe eyes related settings are now limited to windows instead of just the master setting
+- Made the listen server compile as a release binary
+
 # 1.1.1
 - Safe Eyes integration settings are now in their own category
 - Improved settings handling to fix bugs and make code cleaner

@@ -8,7 +8,7 @@
 	},
 	"id": "meltyonice.eye-strain-helper",
 	"name": "Eye Strain Helper",
-	"version": "v1.1.1",
+	"version": "v1.1.2",
 	"developer": "MeltyOnIce",
 	"links": {
 		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
@@ -63,7 +63,8 @@
 		},
 		"safeEyesTitle": {
 			"type": "title",
-            "name": "Safe Eyes Integration"
+            "name": "Safe Eyes Integration",
+			"platforms": ["win"]
 		},
 		"shouldIntegrateSafeEyes": {
 			"type": "bool",
@@ -78,14 +79,16 @@
 			"name": "Block Safe Eyes in levels",
 			"description": "Prevents Safe Eyes breaks from occurring while you're playing levels.",
 			"enable-if": "shouldIntegrateSafeEyes",
-			"default": true
+			"default": true,
+			"platforms": ["win"]
 		},
 		"safeEyesOverESHinEditor": {
 			"type": "bool",
 			"name": "Prefer Safe Eyes in editor",
 			"description": "Unblocks Safe Eyes breaks in the editor & prevents Eye Strain Helper breaks while in the editor.",
 			"enable-if": "shouldIntegrateSafeEyes",
-			"default": true
+			"default": true,
+			"platforms": ["win"]
 		},
 		"debugTitle": {
 			"type": "title",

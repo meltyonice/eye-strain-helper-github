@@ -29,7 +29,6 @@ def launchRSListener():
 
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
-    global s_isGDAlive
     global s_lastHeartbeatTime
     global serverThread2
     global shm
@@ -50,6 +49,7 @@ def initListenServer():
     while sC:
         time.sleep(0.001)
         if shm.read(6,9) == b"HEARTBEAT":
+            global s_isGDAlive
             logging.debug("Got heartbeat!")
             s_isGDAlive = True
             shm.write(6,bytes(9))

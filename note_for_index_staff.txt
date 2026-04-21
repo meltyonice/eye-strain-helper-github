@@ -1,0 +1,1 @@
+I don't have an intel mac laying around to test on, so my apologies if this latest fix with 1.1.2 doesn't properly address the crash; it's a shot in the dark.
