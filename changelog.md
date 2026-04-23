@@ -1,6 +1,7 @@
 # 1.2.0
 - Added an option to pause after breaks
 - Fixed a bug where disabling the mod via its settings prevented `GJBaseGameLayer` from updating
+- Fixed a crash when opening the main levels page on JIT-less iOS
 - Removed a debug setting that outlived its usefulness
 
 # 1.1.2
