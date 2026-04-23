@@ -108,7 +108,7 @@ class $modify(ESHEditorUI, EditorUI) {
 
     void draw() {
         //log::debug("Called!");
-		if(((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || (Settings::fiveSecondInterval() && EyeStrainHelper::calcNow()-lastBreak >= 5))) && !Settings::safeEyesOverESHinEditor() && isPopupSafe()) {
+		if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) && !Settings::safeEyesOverESHinEditor() && isPopupSafe()) {
 			EyeStrainHelper::startBreak();
 		}
 
@@ -160,7 +160,6 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 
 			PlayLayer::get()->pauseAudio();
 
-
 			if(EyeStrainHelper::calcNow()-breakStart >= Settings::breakDuration()) {
 				EyeStrainHelper::onBreak = false;
 				EyeStrainHelper::breakJustEnded = true;
@@ -168,6 +167,9 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 
             if(EyeStrainHelper::breakJustEnded) {
 			    PlayLayer::get()->resumeAudio();
+				if(Settings::shouldPauseAfterBreak()) {
+					PlayLayer::get()->pauseGame(false);
+				}
 			    EyeStrainHelper::breakJustEnded = false;
 			    breakPopup->destroy(false);
 		    }

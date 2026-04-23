@@ -8,7 +8,7 @@
 	},
 	"id": "meltyonice.eye-strain-helper",
 	"name": "Eye Strain Helper",
-	"version": "v1.1.2",
+	"version": "v1.2.0",
 	"developer": "MeltyOnIce",
 	"links": {
 		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
@@ -61,6 +61,11 @@
 			"description": "Allows breaks to start when you hit a checkpoint in platformer mode.",
 			"default": true
 		},
+		"shouldPauseAfterBreak": {
+			"type": "bool",
+			"name": "Pause after breaks",
+			"default": true
+		},
 		"safeEyesTitle": {
 			"type": "title",
             "name": "Safe Eyes Integration",
@@ -102,12 +107,6 @@
 		"breakEveryAttempt": {
 			"type": "bool",
 			"name": "strain break on every attempt",
-			"enable-if": "debugMode",
-			"default": false
-		},
-		"fiveSecondInterval": {
-			"type": "bool",
-			"name": "five second break interval in editor",
 			"enable-if": "debugMode",
 			"default": false
 		},

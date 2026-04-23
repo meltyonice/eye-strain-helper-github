@@ -43,6 +43,14 @@ bool Settings::breakOnPlatformerCP() {
     return settingVal;
 }
 
+bool Settings::shouldPauseAfterBreak() {
+    static bool settingVal = (
+        listenForSettingChanges<bool>("shouldPauseAfterBreak",[](bool value) { settingVal = value; }),
+        getMod()->getSettingValue<bool>("shouldPauseAfterBreak")
+    );
+    return settingVal;
+}
+
 bool Settings::enabled() {
     static bool settingVal = (
         listenForSettingChanges<bool>("enabled",[](bool value) { settingVal = value; }),
@@ -90,19 +98,6 @@ bool Settings::breakEveryAttempt() {
         return false;
     }
 }
-
-bool Settings::fiveSecondInterval() {
-    static bool settingVal = (
-        listenForSettingChanges<bool>("fiveSecondInterval",[](bool value) { settingVal = value; }),
-        getMod()->getSettingValue<bool>("fiveSecondInterval")
-    );
-    if(getMod()->getSettingValue<bool>("debugMode")) {
-        return settingVal;
-    } else {
-        return false;
-    }
-}
-
 
 bool Settings::instantTowerLoad() {
     static bool settingVal = (

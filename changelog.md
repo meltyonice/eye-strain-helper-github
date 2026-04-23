@@ -1,5 +1,9 @@
+# 1.2.0
+- Added an option to pause after breaks
+- Removed a debug setting
+
 # 1.1.2
-- (Hopefully) fixed a crash when opening the editor on MacOS
+- Failed to fix a crash when opening the editor with debug mode enabled on MacOS
 - All safe eyes related settings are now limited to windows instead of just the master setting
 - Made the listen server compile as a release binary
 
