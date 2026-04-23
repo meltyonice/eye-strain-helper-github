@@ -1,7 +1,7 @@
 # 1.2.0
 - Added an option to pause after breaks
 - Fixed a bug where disabling the mod via its settings prevented `GJBaseGameLayer` from updating
-- Removed a debug setting
+- Removed a debug setting that outlived its usefulness
 
 # 1.1.2
 - Failed to fix a crash when opening the editor with debug mode enabled on MacOS
