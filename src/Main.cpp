@@ -1,11 +1,9 @@
 #include "Main.hpp"
-#include "Geode/utils/cocos.hpp"
 #include "SafeEyesIntegration.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
 #include <Geode/binding/GameLevelManager.hpp>
 #include <Geode/binding/PlayLayer.hpp>
 #include <fmt/format.h>
-#include <stdlib.h>
 #include "BreakPopup.hpp"
 #include "Settings.hpp"
 
