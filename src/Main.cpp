@@ -65,6 +65,7 @@ class $modify(ESHCheckpointGameObject, CheckpointGameObject) {
 };
 
 class $modify(ESHMenuLayer, MenuLayer) {
+	#ifdef GEODE_WINDOWS64
     void onPlay(CCObject* sender) {
         if(Settings::enabled()) {
             if(Settings::instantTowerLoad() && !hasInstaLoadedTower) {
@@ -79,6 +80,7 @@ class $modify(ESHMenuLayer, MenuLayer) {
             }
         }
     }
+	#endif
 };
 
 class $modify(ESHPlayLayer, PlayLayer) {
@@ -175,8 +177,9 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 		    }
         }
         }
-    }
-
+    } else {
+		GJBaseGameLayer::update(dt);
+	}
     }
 };
 

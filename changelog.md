@@ -1,5 +1,6 @@
 # 1.2.0
 - Added an option to pause after breaks
+- Fixed a bug where disabling the mod via its settings prevented `GJBaseGameLayer` from updating
 - Removed a debug setting
 
 # 1.1.2

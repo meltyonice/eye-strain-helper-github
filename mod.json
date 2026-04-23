@@ -114,6 +114,7 @@
 			"type": "bool",
 			"name": "load the tower when play clicked",
 			"enable-if": "debugMode",
+			"platforms": ["win"],
 			"default": false
 		}
 	},
