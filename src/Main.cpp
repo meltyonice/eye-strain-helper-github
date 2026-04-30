@@ -31,6 +31,7 @@ bool EyeStrainHelper::onBreak = false;
 bool EyeStrainHelper::pingWarningQueued = false;
 bool EyeStrainHelper::hasShownPingWarningThisLaunch = false;
 bool EyeStrainHelper::breakJustEnded = false;
+bool EyeStrainHelper::popupOpen = false;
 bool breakJustStarted = false;
 bool hasInstaLoadedTower = false;
 bool inputLockCapturedState = false;
@@ -56,7 +57,7 @@ void EyeStrainHelper::startBreak() {
 class $modify(ESHCheckpointGameObject, CheckpointGameObject) {
 	void triggerObject(GJBaseGameLayer* layer, int uniqueID, gd::vector<int> const* remapKeys) {
 		CheckpointGameObject::triggerObject(layer, uniqueID, remapKeys);
-		if(Settings::breakOnPlatformerCP() && Settings::enabled() && EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) {
+		if((Settings::breakOnPlatformerCP() && Settings::enabled() && EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) && !EyeStrainHelper::onBreak) {
 			EyeStrainHelper::startBreak();
 		}
 	}
@@ -83,6 +84,7 @@ class $modify(ESHMenuLayer, MenuLayer) {
 #endif
 
 class $modify(ESHPlayLayer, PlayLayer) {
+
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
         if(Settings::enabled()) {
@@ -92,6 +94,24 @@ class $modify(ESHPlayLayer, PlayLayer) {
         }
         return true;
     }
+
+	void resetLevelFromStart() {
+		if(Settings::enabled()) {
+			if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) && !EyeStrainHelper::onBreak && PlayLayer::m_attempts > 1) {
+				EyeStrainHelper::startBreak();
+			}
+		}
+		PlayLayer::resetLevelFromStart();
+	}
+
+	void resetLevel() {
+		if(Settings::enabled()) {
+			if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) && !EyeStrainHelper::onBreak && PlayLayer::m_attempts > 1) {
+				EyeStrainHelper::startBreak();
+			}
+		}
+		PlayLayer::resetLevel();
+	}
 
     void pauseGame(bool unfocused) {
         if(!EyeStrainHelper::onBreak) {
@@ -109,7 +129,7 @@ class $modify(ESHEditorUI, EditorUI) {
 
     void draw() {
         //log::debug("Called!");
-		if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) && !Settings::safeEyesOverESHinEditor() && isPopupSafe()) {
+		if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) && !Settings::safeEyesOverESHinEditor() && isPopupSafe() && !EyeStrainHelper::onBreak) {
 			EyeStrainHelper::startBreak();
 		}
 
@@ -119,10 +139,15 @@ class $modify(ESHEditorUI, EditorUI) {
         if(EyeStrainHelper::onBreak) {
             if(breakJustStarted) {
 				breakJustStarted = false;
-				breakPopup = BreakPopup::create(Settings::breakDuration());
+				if(EyeStrainHelper::popupOpen) {
+					EyeStrainHelper::breakJustEnded = true;
+					EyeStrainHelper::onBreak = false;
+				} else {
+					breakPopup = BreakPopup::create(Settings::breakDuration());
+				}
 		    }
 
-			if(isPopupSafe()) {
+			if(breakPopup != nullptr) {
 				breakPopup->update();
 			}
 
@@ -133,7 +158,9 @@ class $modify(ESHEditorUI, EditorUI) {
 
             if(EyeStrainHelper::breakJustEnded) {
 			    EyeStrainHelper::breakJustEnded = false;
-			    breakPopup->destroy(false);
+				if(breakPopup != nullptr) {
+			    	breakPopup->destroy(false);
+				}
 		    }
         }
         EditorUI::draw();
@@ -157,7 +184,10 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 				breakJustStarted = false;
 				breakPopup = BreakPopup::create(Settings::breakDuration());
 			}
-			breakPopup->update();
+
+			if(breakPopup != nullptr) {
+				breakPopup->update();
+			}
 
 			PlayLayer::get()->pauseAudio();
 
@@ -172,7 +202,9 @@ class $modify(ESHBaseGameLayer, GJBaseGameLayer) {
 					PlayLayer::get()->pauseGame(false);
 				}
 			    EyeStrainHelper::breakJustEnded = false;
-			    breakPopup->destroy(false);
+				if(breakPopup != nullptr) {
+			    	breakPopup->destroy(false);
+				}
 		    }
         }
         }
@@ -186,7 +218,7 @@ class $modify(ESHPlayerObject, PlayerObject) {
     void playerDestroyed(bool noeffects) {
 		PlayerObject::playerDestroyed(noeffects);
 		if(Settings::enabled()) {
-			if(EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) {
+			if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60 || Settings::breakEveryAttempt()) && !EyeStrainHelper::onBreak) {
 				EyeStrainHelper::startBreak();
 			}
 		}

@@ -10,4 +10,5 @@ class EyeStrainHelper {
         static long lastHeartbeat;
         static bool breakJustEnded;
         static int concurrentSkips;
+        static bool popupOpen;
 };

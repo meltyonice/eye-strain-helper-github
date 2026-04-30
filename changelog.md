@@ -1,3 +1,7 @@
+# 1.2.1
+- Fixed some bugs
+- Restarting a level now triggers a break check
+
 # 1.2.0
 - Added an option to pause after breaks
 - Fixed a bug where disabling the mod via its settings prevented `GJBaseGameLayer` from updating

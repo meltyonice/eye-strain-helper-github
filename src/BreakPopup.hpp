@@ -15,7 +15,6 @@ using namespace geode::prelude;
 
 class BreakPopup : public geode::Popup {
 protected:
-
     CCLabelBMFont* timerLabel;
     long startTime;
     long durationHelper;
