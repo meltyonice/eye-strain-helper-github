@@ -1,10 +1,16 @@
 #include "Main.hpp"
+#include "Geode/cocos/CCDirector.h"
+#include "Geode/cocos/platform/win32/CCEGLView.h"
+#include "Geode/cocos/robtop/glfw/glfw3.h"
+#include "Geode/loader/Log.hpp"
 #include "SafeEyesIntegration.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/GJBaseGameLayer.hpp>
 #include <Geode/binding/GameLevelManager.hpp>
 #include <Geode/binding/PlayLayer.hpp>
 #include <fmt/format.h>
 #include "BreakPopup.hpp"
+
 #include "Settings.hpp"
 
 using namespace geode::prelude;
@@ -121,6 +127,12 @@ class $modify(ESHPlayLayer, PlayLayer) {
 };
 
 class $modify(ESHEditorUI, EditorUI) {
+	#ifdef GEODE_IS_DESKTOP
+	struct Fields {
+		long lastDraw = EyeStrainHelper::calcNow();
+	};
+	#endif
+
 	bool init(LevelEditorLayer* editorLayer) {
 		if (!EditorUI::init(editorLayer)) return false;
 		sinceUnsafeOperation = EyeStrainHelper::calcNow();
@@ -128,6 +140,9 @@ class $modify(ESHEditorUI, EditorUI) {
 	}
 
     void draw() {
+		#ifdef GEODE_IS_DESKTOP
+		if(EyeStrainHelper::calcNow()-m_fields->lastDraw < Settings::breakDuration()/2) {
+		#endif
         //log::debug("Called!");
 		if((EyeStrainHelper::calcNow()-lastBreak >= Settings::minutesBetweenBreaks()*60) && !Settings::safeEyesOverESHinEditor() && isPopupSafe() && !EyeStrainHelper::onBreak) {
 			EyeStrainHelper::startBreak();
@@ -163,6 +178,10 @@ class $modify(ESHEditorUI, EditorUI) {
 				}
 		    }
         }
+		#ifdef GEODE_IS_DESKTOP
+		}
+		m_fields->lastDraw = EyeStrainHelper::calcNow();
+		#endif
         EditorUI::draw();
     }
 };

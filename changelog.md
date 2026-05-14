@@ -1,3 +1,7 @@
+# 1.2.2
+- Fixed a crash when the game is suspended
+- Updated SDK version to 5.7.1
+
 # 1.2.1
 - Fixed some bugs
 - Restarting a level now triggers a break check
