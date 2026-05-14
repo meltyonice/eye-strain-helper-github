@@ -17,42 +17,22 @@ from safeeyes.model import State
 from threading import *
 import subprocess
 import time
-import ipckit
+import socket
 import subprocess
 
 s_isGDAlive = False
 s_lastHeartbeatTime = time.time()
-
+"""
 def launchRSListener():
     os.chdir(".config/safeeyes/plugins/esh-integration/")
     subprocess.run("./eshlistener")
-
+"""
 def initListenServer():
     logging.debug("[ESH-Integration] Starting HTTP Daemon...")
     global s_lastHeartbeatTime
     global serverThread2
     global shm
-    #logging.debug(os.getcwd())
-    try:
-        shm = ipckit.SharedMemory.create("eshs2rs", 512)
-    except FileExistsError:
-        shm = ipckit.SharedMemory.open("eshs2rs")
-        shm.write(0,bytes(512))
-    serverThread2 = Thread(target=launchRSListener)
-    serverThread2.daemon = True
-    serverThread2.start()
-    time.sleep(0.001)
-    sC = True
-    if shm.read(2,2) != b"11":
-        logging.debug("Couldn't detect listen server!")
-        sC = False
-    while sC:
-        time.sleep(0.001)
-        if shm.read(6,9) == b"HEARTBEAT":
-            global s_isGDAlive
-            logging.debug("Got heartbeat!")
-            s_isGDAlive = True
-            shm.write(6,bytes(9))
+    
         
 
 def init(ctx, safeeyes_config, plugin_config):

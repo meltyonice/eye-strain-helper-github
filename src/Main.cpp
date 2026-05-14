@@ -1,8 +1,5 @@
 #include "Main.hpp"
-#include "Geode/cocos/CCDirector.h"
-#include "Geode/cocos/platform/win32/CCEGLView.h"
-#include "Geode/cocos/robtop/glfw/glfw3.h"
-#include "Geode/loader/Log.hpp"
+#include <Geode/cocos/CCDirector.h>
 #include "SafeEyesIntegration.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
 #include <Geode/binding/GJBaseGameLayer.hpp>
