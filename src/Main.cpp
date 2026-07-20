@@ -70,7 +70,8 @@ class $modify(ESHCheckpointGameObject, CheckpointGameObject) {
 class $modify(ESHMenuLayer, MenuLayer) {
     void onPlay(CCObject* sender) {
         if(Settings::enabled()) {
-            if(Settings::instantTowerLoad() && !hasInstaLoadedTower) {
+			#ifdef INSTANT_TOWER_LOAD
+            if(!hasInstaLoadedTower) {
                 auto LevelManager = GameLevelManager::sharedState();
                 auto tower = LevelManager->getMainLevel(5001, false);
                 auto pl = PlayLayer::scene(tower, false, false);
@@ -80,7 +81,10 @@ class $modify(ESHMenuLayer, MenuLayer) {
             } else {
                 MenuLayer::onPlay(sender);
             }
-        }
+			#endif
+        } else {
+			MenuLayer::onPlay(sender);
+		}
     }
 	
 };

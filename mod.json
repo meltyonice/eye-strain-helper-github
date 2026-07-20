@@ -1,5 +1,5 @@
 {
-	"geode": "5.7.1",
+	"geode": "5.8.2",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -8,8 +8,8 @@
 	},
 	"id": "meltyonice.eye-strain-helper",
 	"name": "Eye Strain Helper",
-	"version": "v1.2.2",
-	"developer": "MeltyOnIce",
+	"version": "v1.2.3",
+	"developer": "{PinkSickle}",
 	"links": {
 		"source": "https://codeberg.org/meltyonice/geode-eyestrain"
 	},
@@ -108,13 +108,6 @@
 			"type": "bool",
 			"name": "strain break on every attempt",
 			"enable-if": "debugMode",
-			"default": false
-		},
-		"instantTowerLoad": {
-			"type": "bool",
-			"name": "load the tower when play clicked",
-			"enable-if": "debugMode",
-			"platforms": ["win"],
 			"default": false
 		}
 	},

@@ -99,7 +99,7 @@ bool Settings::breakEveryAttempt() {
     }
 }
 
-bool Settings::instantTowerLoad() {
+/*bool Settings::instantTowerLoad() {
     static bool settingVal = (
         listenForSettingChanges<bool>("instantTowerLoad",[](bool value) { settingVal = value; }),
         getMod()->getSettingValue<bool>("instantTowerLoad")
@@ -109,4 +109,4 @@ bool Settings::instantTowerLoad() {
     } else {
         return false;
     }
-}
+}*/

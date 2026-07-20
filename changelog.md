@@ -1,5 +1,8 @@
+# 1.2.3
+- Cosmetic and minor internal changes.
+
 # 1.2.2
-- Fixed a crash when the game is suspended
+- (Hopefully) fixed a crash that occurred when the game was minimized with the editor open
 - Updated SDK version to 5.7.1
 
 # 1.2.1
